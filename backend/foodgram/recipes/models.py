@@ -1,40 +1,39 @@
 from django.db import models
 from users.models import User
 from api.models import Tag, Ingredient
-import base64
-from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator
 
-
-class Base64ImageField(models.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super(Base64ImageField, self).to_internal_value(data)
+from recipes.fields import Base64ImageField
 
 
 class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
-        through='RecipeTag'
+        through='RecipeTag',
+        blank=False
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='authors')
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='RecipeIngredient'
+        through='RecipeIngredient',
+        blank=False
     )
-    is_favorited = models.BooleanField()
-    is_in_shopping_cart = models.BooleanField()
-    name = models.CharField(max_length=256)
+    is_favorited = models.BooleanField(default=False)
+    is_in_shopping_cart = models.BooleanField(default=False)
+    name = models.CharField(max_length=256,
+                            null=False, blank=False)
     image = Base64ImageField(upload_to='recipe_images',
-                             null=True, blank=True)
-    text = models.TextField()
+                             null=False, blank=False)
+    text = models.TextField(null=False, blank=False)
     cooking_time = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(1)],
+        null=False, blank=False
     )
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.name

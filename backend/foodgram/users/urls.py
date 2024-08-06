@@ -1,25 +1,14 @@
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from users.views import UserAvatarUpdateView, SubscriptionsView, SubscribeView
+from users.views import CustomUserViewSet
 
+user_router = DefaultRouter()
+user_router.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
-    path('',
-         include('djoser.urls')
-         ),
     path('auth/',
-         include('djoser.urls.jwt')
+         include('djoser.urls.authtoken')
          ),
-    path('users/me/avatar/',
-         UserAvatarUpdateView.as_view(),
-         name='user-avatar'
-         ),
-    path('users/subscriptions/',
-         SubscriptionsView.as_view(),
-         name='subscriptions'
-         ),
-    path('users/<int:user_id>/subscribe/',
-         SubscribeView.as_view(),
-         name='user-subscribe'
-         ),
+    path('', include(user_router.urls)),
 ]

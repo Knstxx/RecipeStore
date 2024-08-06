@@ -1,29 +1,22 @@
-from rest_framework.routers import DefaultRouter
-from django.urls import include, path
+from django.urls import path
 
-from recipes.views import (RecipeViewSet, GetLinkView, DownloadCartView,
-                           FavoriteView, ShoppingCartView)
+from recipes.views import RecipesViewSet, RecipeViewSet, DownloadCartView
 
-
-recipes_router = DefaultRouter()
-recipes_router.register(r'', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
-    path('', include(recipes_router.urls)),
+    path('<int:pk>/',
+         RecipeViewSet.as_view({'get': 'list',
+                                'patch': 'partial_update',
+                                'delete': 'destroy'}),
+         name='recipe'
+         ),
+    path('',
+         RecipesViewSet.as_view({'get': 'list',
+                                 'post': 'create'}),
+         name='recipes'
+         ),
     path('download_shopping_cart/',
          DownloadCartView.as_view(),
          name='d-shopping-cart'
-         ),
-    path('<int:recipe_id>/get-link/',
-         GetLinkView.as_view(),
-         name='get-link'
-         ),
-    path('<int:recipe_id>/shopping_cart/',
-         ShoppingCartView.as_view(),
-         name='get-link'
-         ),
-    path('<int:recipe_id>/favorite/',
-         FavoriteView.as_view(),
-         name='get-link'
          ),
 ]

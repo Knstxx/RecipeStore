@@ -9,6 +9,7 @@ from api.filters import IngredientFilter
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    http_method_names = ['get']
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -16,3 +17,4 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend,]
     filterset_class = IngredientFilter
+    http_method_names = ['get']
