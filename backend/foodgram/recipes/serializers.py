@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from recipes.models import Recipe, RecipeIngredient
+from drf_extra_fields.fields import Base64ImageField
 from api.models import Tag
 
 
@@ -17,6 +18,7 @@ class RecipeMakeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(
         source='recipeingredient_set', many=True
     )
+    image = Base64ImageField()
     '''is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()'''
 

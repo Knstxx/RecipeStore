@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-
-from recipes.fields import Base64ImageField
+from django.db.models import UniqueConstraint
 
 
 class User(AbstractUser):
@@ -12,9 +11,8 @@ class User(AbstractUser):
                                   null=False, blank=False)
     last_name = models.CharField('Фамилия', max_length=150,
                                  null=False, blank=False)
-    password = models.CharField('Пароль', max_length=150)
-    avatar = Base64ImageField(upload_to='avatar',
-                              null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatar',
+                               null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -29,3 +27,25 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Subscribe(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name='subscriber',
+        on_delete=models.CASCADE,
+    )
+    author = models.ForeignKey(
+        User,
+        related_name='subscribing',
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        ordering = ['-id']
+        constraints = [
+            UniqueConstraint(fields=['user', 'author'],
+                             name='unique_subscription')
+        ]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

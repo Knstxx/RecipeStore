@@ -3,8 +3,6 @@ from users.models import User
 from api.models import Tag, Ingredient
 from django.core.validators import MinValueValidator
 
-from recipes.fields import Base64ImageField
-
 
 class Recipe(models.Model):
     tags = models.ManyToManyField(
@@ -23,15 +21,18 @@ class Recipe(models.Model):
     is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField(max_length=256,
                             null=False, blank=False)
-    image = Base64ImageField(upload_to='recipe_images',
-                             null=False, blank=False)
+    image = models.ImageField(upload_to='recipe_images',
+                              null=False, blank=False)
     text = models.TextField(null=False, blank=False)
     cooking_time = models.PositiveIntegerField(
         validators=[MinValueValidator(1)],
         null=False, blank=False
     )
+    short_link = models.CharField(unique=True, max_length=256,
+                                  null=True, blank=True)
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
