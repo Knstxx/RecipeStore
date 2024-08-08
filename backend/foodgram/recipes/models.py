@@ -93,3 +93,25 @@ class Favorite(models.Model):
         ]
         verbose_name = 'Любимый рецепт'
         verbose_name_plural = 'Любимые рецепты'
+
+
+class ShopCard(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name='inshop_cart',
+        on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='inshop_cart',
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        ordering = ['-id']
+        constraints = [
+            UniqueConstraint(fields=['user', 'recipe'],
+                             name='unique_shopcart')
+        ]
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'

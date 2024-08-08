@@ -1,15 +1,18 @@
 from rest_framework import viewsets
-from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.serializers import (RecipeSerializer, RecipeMakeSerializer,
-                                 FavSerializer)
-from recipes.models import Recipe, Favorite
+                                 FavShopSerializer)
+from recipes.models import Recipe, Favorite, ShopCard
 from rest_framework.decorators import action
 import random
 import string
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from collections import defaultdict
+from fpdf import FPDF
+from django.http import HttpResponse
+import io
 
 
 class RecipeUrlViewSet(viewsets.ModelViewSet):
@@ -47,7 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart')
         if is_in_shopping_cart == '1' and user.is_authenticated:
-            queryset = queryset.filter(favorites__user=user) #
+            queryset = queryset.filter(inshop_cart__user=user)
         return queryset
 
     @action(detail=True, methods=['get'], url_path='get-link')
@@ -70,7 +73,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post', 'delete'], url_path='favorite')
-    def subscribe(self, request, pk=None):
+    def favorite(self, request, pk=None):
         recipe = self.get_object()
         user = request.user
 
@@ -79,7 +82,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return Response({'errors': 'Рецепт уже у вас в избранном.'},
                                 status=status.HTTP_400_BAD_REQUEST)
             Favorite.objects.create(user=user, recipe=recipe)
-            serializer = FavSerializer(recipe, context={'request': request})
+            serializer = FavShopSerializer(recipe,
+                                           context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
@@ -91,11 +95,64 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'errors': 'Рецепт не находится у вас в избранном.'},
                 status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
+    def shopping_cart(self, request, pk=None):
+        recipe = self.get_object()
+        user = request.user
 
-'''path('<int:recipe_id>/shopping_cart/',
-         ShoppingCartView.as_view(),
-         )'''
+        if request.method == 'POST':
+            if ShopCard.objects.filter(user=user, recipe=recipe).exists():
+                return Response(
+                    {'errors': 'Рецепт уже у вас в списке покупок.'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            ShopCard.objects.create(user=user, recipe=recipe)
+            serializer = FavShopSerializer(recipe,
+                                           context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        elif request.method == 'DELETE':
+            shop_cart = ShopCard.objects.filter(user=user, recipe=recipe)
+            if shop_cart.exists():
+                shop_cart.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'errors': 'Рецепт не находится у вас в списке покупок.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-class DownloadCartView(APIView):
-    pass
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    def download_cart(self, request):
+        user = request.user
+        rec_in_cart = ShopCard.objects.filter(
+            user=user).prefetch_related('recipe__ingredients')
+        ingredients = defaultdict(int)
+        for item in rec_in_cart:
+            for recipe_ingredient in item.recipe.recipe_ingredients.all():
+                ingredient = recipe_ingredient.ingredient
+                ingredients[(ingredient.name,
+                             ingredient.measurement_unit)
+                            ] += recipe_ingredient.amount
+
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.add_font('ComicSansMS', '',
+                     'recipes/fonts/ComicSansMS.ttf',
+                     uni=True)
+        pdf.add_font('ComicSansMSB', '',
+                     'recipes/fonts/ComicSansMSB.ttf',
+                     uni=True)
+        pdf.set_text_color(0, 181, 134)
+        pdf.set_font("ComicSansMSB", size=25)
+        pdf.cell(0, 10, "К закупкам!", ln=True, align='C')
+        pdf.set_text_color(0, 45, 143)
+        pdf.set_font("ComicSansMS", size=14)
+        for index, ((name, unit), amount) in enumerate(ingredients.items()):
+            line_text = f"{index + 1}. {name} ({unit}) — {amount}"
+            pdf.cell(0, 10, line_text, ln=True)
+        pdf_output = io.BytesIO()
+        pdf.output(pdf_output)
+        pdf_output.seek(0)
+        response = HttpResponse(pdf_output, content_type='application/pdf')
+        response['Content-Disposition'
+                 ] = 'attachment; filename="shopping_cart.pdf"'
+        return response
