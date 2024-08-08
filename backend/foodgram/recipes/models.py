@@ -2,6 +2,7 @@ from django.db import models
 from users.models import User
 from api.models import Tag, Ingredient
 from django.core.validators import MinValueValidator
+from django.db.models import UniqueConstraint
 
 
 class Recipe(models.Model):
@@ -18,8 +19,6 @@ class Recipe(models.Model):
         blank=False,
         related_name='recipes',
     )
-    is_favorited = models.BooleanField(default=False)
-    is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField(max_length=256,
                             null=False, blank=False)
     image = models.ImageField(upload_to='recipe_images',
@@ -46,10 +45,12 @@ class RecipeTag(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        null=False,
     )
     tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
+        null=False,
         related_name='tags_recipes'
     )
 
@@ -58,13 +59,37 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        null=False,
         related_name='recipe_ingredients'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
+        null=False,
         related_name='ingredient_recipes'
     )
     amount = models.PositiveIntegerField(
         validators=[MinValueValidator(1)],
     )
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name='favorites',
+        on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='favorites',
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        ordering = ['-id']
+        constraints = [
+            UniqueConstraint(fields=['user', 'recipe'],
+                             name='unique_favorite')
+        ]
+        verbose_name = 'Любимый рецепт'
+        verbose_name_plural = 'Любимые рецепты'

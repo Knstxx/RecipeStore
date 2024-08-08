@@ -49,11 +49,13 @@ class CustomUserViewSet(DjoserUserViewSet):
 
         if request.method == 'POST':
             if user == author:
-                return Response({'error': 'Вы не можете подписаться на себя.'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': 'Вы не можете подписаться на себя.'},
+                    status=status.HTTP_400_BAD_REQUEST)
             if Subscribe.objects.filter(user=user, author=author).exists():
-                return Response({'error': 'Вы уже подписаны на этого пользователя.'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': 'Вы уже подписаны на этого пользователя.'},
+                    status=status.HTTP_400_BAD_REQUEST)
             Subscribe.objects.create(user=user, author=author)
             serializer = SubSerializer(author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -63,8 +65,9 @@ class CustomUserViewSet(DjoserUserViewSet):
             if subscription.exists():
                 subscription.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response({'error': 'Вы не подписаны на этого пользователя.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Вы не подписаны на этого пользователя.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='subscriptions')
     def subscriptions(self, request):
