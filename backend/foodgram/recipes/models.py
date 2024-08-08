@@ -15,7 +15,8 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
-        blank=False
+        blank=False,
+        related_name='recipes',
     )
     is_favorited = models.BooleanField(default=False)
     is_in_shopping_cart = models.BooleanField(default=False)
@@ -44,13 +45,11 @@ class RecipeTag(models.Model):
 
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
     )
     tag = models.ForeignKey(
         Tag,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
         related_name='tags_recipes'
     )
 
@@ -58,13 +57,12 @@ class RecipeTag(models.Model):
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients'
     )
     ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
         related_name='ingredient_recipes'
     )
     amount = models.PositiveIntegerField(

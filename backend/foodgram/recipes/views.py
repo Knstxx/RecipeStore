@@ -36,7 +36,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'partial_update' or self.action == 'create':
             return RecipeMakeSerializer
-        return RecipeSerializer
+        return RecipeMakeSerializer
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
