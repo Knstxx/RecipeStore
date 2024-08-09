@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from users.models import User, Subscribe
 from users.serializers import (CustomUserSerializer, CreateUserSerializer,
                                SubSerializer)
+from rest_framework.permissions import IsAuthenticated
 
 
 class CustomUserViewSet(DjoserUserViewSet):
@@ -69,7 +70,8 @@ class CustomUserViewSet(DjoserUserViewSet):
                 {'errors': 'Вы не подписаны на этого пользователя.'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'], url_path='subscriptions')
+    @action(detail=False, methods=['get'], url_path='subscriptions',
+            permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
         subscriptions = Subscribe.objects.filter(user=user)

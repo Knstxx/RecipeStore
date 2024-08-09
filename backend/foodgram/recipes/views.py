@@ -13,6 +13,9 @@ from collections import defaultdict
 from fpdf import FPDF
 from django.http import HttpResponse
 import io
+from api.permissions import IsAuthorOrReaderOrAuthenticated
+from rest_framework.permissions import IsAuthenticated
+from api.filters import RecipeFilter
 
 
 class RecipeUrlViewSet(viewsets.ModelViewSet):
@@ -33,25 +36,14 @@ class RecipeUrlViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [IsAuthorOrReaderOrAuthenticated]
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author', 'tags',)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action == 'partial_update' or self.action == 'create':
             return RecipeMakeSerializer
         return RecipeSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        user = self.request.user
-        is_favorited = self.request.query_params.get('is_favorited')
-        if is_favorited == '1' and user.is_authenticated:
-            queryset = queryset.filter(favorites__user=user)
-        is_in_shopping_cart = self.request.query_params.get(
-            'is_in_shopping_cart')
-        if is_in_shopping_cart == '1' and user.is_authenticated:
-            queryset = queryset.filter(inshop_cart__user=user)
-        return queryset
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
@@ -119,17 +111,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'errors': 'Рецепт не находится у вас в списке покупок.'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart',
+            permission_classes=(IsAuthenticated,))
     def download_cart(self, request):
         user = request.user
         rec_in_cart = ShopCard.objects.filter(
             user=user).prefetch_related('recipe__ingredients')
+        if not rec_in_cart.exists():
+            return Response({"detail": "Корзина пуста"},
+                            status=status.HTTP_200_OK)
         ingredients = defaultdict(int)
+        print(rec_in_cart)
         for item in rec_in_cart:
             for recipe_ingredient in item.recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
-                ingredients[(ingredient.name,
-                             ingredient.measurement_unit)
+                ingredients[(ingredient.name, ingredient.measurement_unit)
                             ] += recipe_ingredient.amount
 
         pdf = FPDF()
