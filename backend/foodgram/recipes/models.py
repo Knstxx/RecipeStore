@@ -1,8 +1,9 @@
 from django.db import models
-from users.models import User
-from api.models import Tag, Ingredient
 from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint
+
+from users.models import User
+from api.models import Tag, Ingredient
 
 
 class Recipe(models.Model):
@@ -91,8 +92,8 @@ class Favorite(models.Model):
             UniqueConstraint(fields=['user', 'recipe'],
                              name='unique_favorite')
         ]
-        verbose_name = 'Любимый рецепт'
-        verbose_name_plural = 'Любимые рецепты'
+        verbose_name = 'Любимый рецепт пользователей'
+        verbose_name_plural = 'Любимые рецепты пользователей'
 
 
 class ShopCard(models.Model):
@@ -113,5 +114,5 @@ class ShopCard(models.Model):
             UniqueConstraint(fields=['user', 'recipe'],
                              name='unique_shopcart')
         ]
-        verbose_name = 'Список покупок'
-        verbose_name_plural = 'Списки покупок'
+        verbose_name = 'Список покупок пользователей'
+        verbose_name_plural = 'Списки покупок пользователей'

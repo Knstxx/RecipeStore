@@ -1,8 +1,6 @@
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.serializers import (RecipeSerializer, RecipeMakeSerializer,
-                                 FavShopSerializer)
-from recipes.models import Recipe, Favorite, ShopCard
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 import random
 import string
@@ -13,8 +11,11 @@ from collections import defaultdict
 from fpdf import FPDF
 from django.http import HttpResponse
 import io
+
+from recipes.serializers import (RecipeSerializer, RecipeMakeSerializer,
+                                 FavShopSerializer)
+from recipes.models import Recipe, Favorite, ShopCard
 from api.permissions import IsAuthorOrReaderOrAuthenticated
-from rest_framework.permissions import IsAuthenticated
 from api.filters import RecipeFilter
 
 

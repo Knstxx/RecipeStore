@@ -1,15 +1,25 @@
 from django_filters import rest_framework as filters
+from django.db.models import Q
 
 from api.models import Ingredient, Tag
 from recipes.models import Recipe
 
 
 class IngredientFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name='name', lookup_expr='startswith')
+    name = filters.CharFilter(field_name='name',
+                              method='filter_by_name',)
 
     class Meta:
         model = Ingredient
         fields = ['name']
+
+    def filter_by_name(self, queryset, name, value):
+        val = (Q(name__istartswith=value.lower())
+               | Q(name__istartswith=value.capitalize()))
+        res = queryset.filter(val)
+        if res.exists():
+            return res
+        return queryset.filter(name__icontains=value.lower())
 
 
 class RecipeFilter(filters.FilterSet):
