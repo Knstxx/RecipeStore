@@ -7,4 +7,4 @@
 
 Проект реализован в качестве дипломной работы Я.Практикума.
 
-Tech.Stack: Python, Django, DRF, PostgreSQL, Djoser
+Tech.Stack: Python, Django, DRF, PostgreSQL, Djoser.
