@@ -20,6 +20,12 @@ class CreateUserSerializer(UserSerializer):
         fields = ('email', 'username', 'first_name', 'last_name',
                   'password')
 
+    def validate_password(self, value):
+        if len(value) < 6:
+            raise serializers.ValidationError(
+                "Пароль должен содержать не менее 6 символов.")
+        return value
+
     def create(self, validated_data):
         user = User(**validated_data)
         user.set_password(validated_data['password'])
