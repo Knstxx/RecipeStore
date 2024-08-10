@@ -8,11 +8,11 @@ SECRET_KEY = 'django-insecure-8r@()nz+l5w=m&h-6k!l6n#9$dme%*259x3k=n)yp#y=+lo2m7
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['158.160.14.236', '127.0.0.1', 'localhost',
+                 'foooooooooooodgram.sytes.net']
 
 INSTALLED_APPS = [
     'rest_framework',
-    'corsheaders',
     'rest_framework.authtoken',
     'djoser',
     'django_filters',
@@ -26,12 +26,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
-
-CORS_URLS_REGEX = r'^/api/.*$'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,16 +60,6 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-'''# Этими строчками замените текущую настройку DATABASES
-DATABASES = {
-    'default': {
-        # Меняем настройку Django: теперь для работы будет использоваться
-        # бэкенд postgresql
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'django'),
         'USER': os.getenv('POSTGRES_USER', 'django'),
@@ -83,7 +67,7 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', 5432)
     }
-}'''
+}
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -114,11 +98,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / '/media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

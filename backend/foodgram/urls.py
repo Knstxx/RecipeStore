@@ -10,7 +10,7 @@ urlpatterns = [
          RecipeUrlViewSet.as_view({'get': 'retrieve',
                                    'patch': 'partial_update',
                                    'delete': 'destroy'})),
-    path('api/admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('api/', include('recipes.urls')),
     path('api/', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
