@@ -39,7 +39,7 @@ MIDDLEWARE = [
 
 CSRF_COOKIE_SECURE = True
 
-CSRF_TRUSTED_ORIGINS = ['http://foooooooooooodgram.sytes.net']
+CSRF_TRUSTED_ORIGINS = ['foooooooooooodgram.sytes.net/admin/']
 
 ROOT_URLCONF = 'foodgram.urls'
 
