@@ -97,6 +97,7 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py impdata
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+          sudo docker compose -f docker-compose.production.yml restart foodgram-proxy
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
