@@ -16,7 +16,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=128,
+    name = models.CharField(max_length=128, unique=True,
                             null=False, blank=False)
     measurement_unit = models.CharField(max_length=64,
                                         null=False, blank=False)
