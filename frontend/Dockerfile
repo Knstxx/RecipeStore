@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 
-RUN npm ci
+RUN npm install -g npm@10.8.2 && npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build
