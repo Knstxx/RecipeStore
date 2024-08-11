@@ -11,6 +11,8 @@ DEBUG = False
 ALLOWED_HOSTS = ['158.160.14.236', '127.0.0.1', 'localhost',
                  'foooooooooooodgram.sytes.net']
 
+CSRF_TRUSTED_ORIGINS = ['http://*.foooooooooooodgram.sytes.net']
+
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
@@ -35,10 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-ALLOWED_ORIGINS = ['http://*', 'https://*']
-CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS.copy()
+]   
 
 ROOT_URLCONF = 'foodgram.urls'
 
