@@ -37,9 +37,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CSRF_COOKIE_SECURE = True
-
-CSRF_TRUSTED_ORIGINS = ['http://foooooooooooodgram.sytes.net/admin/login']
+CSRF_COOKIE_SECURE = False
 
 ROOT_URLCONF = 'foodgram.urls'
 
