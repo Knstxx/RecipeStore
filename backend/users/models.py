@@ -1,16 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db.models import UniqueConstraint
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
 class User(AbstractUser):
     email = models.EmailField('Email', unique=True, max_length=254)
-    username = models.CharField('Никнейм', max_length=150,
-                                null=False, blank=False)
-    first_name = models.CharField('Имя', max_length=150,
-                                  null=False, blank=False)
-    last_name = models.CharField('Фамилия', max_length=150,
-                                 null=False, blank=False)
+    username = models.CharField('Никнейм', max_length=150)
+    first_name = models.CharField('Имя', max_length=150)
+    last_name = models.CharField('Фамилия', max_length=150)
     avatar = models.ImageField(upload_to='avatar',
                                null=True, blank=True)
 

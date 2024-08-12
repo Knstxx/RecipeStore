@@ -1,4 +1,5 @@
 from csv import DictReader
+import os
 
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -16,25 +17,23 @@ class Command(BaseCommand):
         n = 0
         for model, file_name in TABLES.items():
             add = 0
-            sum = 0
+            sum_cl = 0
             self.stdout.write(self.style.WARNING(
                 f'Импорт данных из {file_name}')
             )
-            with open(
-                f'{settings.BASE_DIR}/data/{file_name}',
-                'r',
-                encoding='utf-8'
-            ) as file:
+            file_path = os.path.join(settings.BASE_DIR, '..', 'data',
+                                     file_name)
+            with open(file_path, 'r', encoding='utf-8') as file:
                 reader = DictReader(file)
                 for line in reader:
-                    sum += 1
+                    sum_cl += 1
                     try:
                         model.objects.create(**line)
                         add += 1
                     except Exception:
                         continue
             self.stdout.write(self.style.SUCCESS(
-                f'Импорт из {file_name} закончен. Добавлено {add} из {sum}')
+                f'Импорт из {file_name} закончен. Добавлено {add} из {sum_cl}')
             )
             n += 1
         if n == len(TABLES):

@@ -3,32 +3,49 @@ from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint
 
 from users.models import User
-from api.models import Tag, Ingredient
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=32)
+    slug = models.SlugField(max_length=32, unique=True)
+
+    class Meta:
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredient(models.Model):
+    name = models.CharField(max_length=128, unique=True)
+    measurement_unit = models.CharField(max_length=64)
+
+    class Meta:
+        verbose_name = 'Ингредиент '
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         through='RecipeTag',
-        blank=False
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='authors')
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
-        blank=False,
         related_name='recipes',
     )
-    name = models.CharField(max_length=256,
-                            null=False, blank=False)
-    image = models.ImageField(upload_to='recipe_images',
-                              null=False, blank=False)
-    text = models.TextField(null=False, blank=False)
+    name = models.CharField(max_length=256)
+    image = models.ImageField(upload_to='recipe_images')
+    text = models.TextField()
     cooking_time = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
-        null=False, blank=False
-    )
+        validators=[MinValueValidator(1)])
     short_link = models.CharField(unique=True, max_length=256,
                                   null=True, blank=True)
 

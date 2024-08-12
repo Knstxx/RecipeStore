@@ -14,10 +14,6 @@ ALLOWED_HOSTS = ['158.160.14.236', '127.0.0.1', 'localhost',
 CSRF_TRUSTED_ORIGINS = ['http://*.foooooooooooodgram.sytes.net']
 
 INSTALLED_APPS = [
-    'rest_framework',
-    'rest_framework.authtoken',
-    'djoser',
-    'django_filters',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
@@ -27,6 +23,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

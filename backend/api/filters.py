@@ -1,7 +1,6 @@
 from django_filters import rest_framework as filters
-from django.db.models import Q
 
-from api.models import Ingredient, Tag
+from recipes.models import Ingredient, Tag
 from recipes.models import Recipe
 
 
@@ -14,9 +13,7 @@ class IngredientFilter(filters.FilterSet):
         fields = ['name']
 
     def filter_by_name(self, queryset, name, value):
-        val = (Q(name__istartswith=value.lower())
-               | Q(name__istartswith=value.capitalize()))
-        res = queryset.filter(val)
+        res = queryset.filter(name__istartswith=value)
         if res.exists():
             return res
         return queryset.filter(name__icontains=value.lower())
