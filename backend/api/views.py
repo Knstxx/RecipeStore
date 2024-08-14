@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from collections import defaultdict
 from fpdf import FPDF
 from django.http import HttpResponse
@@ -21,7 +21,7 @@ from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReaderOrAuthenticated
 from api.serializers import (RecipeSerializer, RecipeMakeSerializer,
                              FavShopSerializer, CustomUserSerializer,
-                             CreateUserSerializer, SubSerializer)
+                             CreateUserSerializer, SubscriptionsSerializers)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -38,19 +38,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     http_method_names = ['get']
 
 
-class RecipeUrlViewSet(viewsets.ModelViewSet):
-    lookup_field = 'short_link'
-    queryset = Recipe.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == 'partial_update' or self.action == 'create':
-            return RecipeMakeSerializer
-        return RecipeSerializer
-
-    def get_object(self):
-        short_link = self.kwargs.get(self.lookup_field)
-        return get_object_or_404(self.get_queryset(),
-                                 short_link__contains=short_link)
+def recipe_redirect_view(request, short_link):
+    recipe = get_object_or_404(Recipe, short_link=short_link)
+    url = f'/api/recipes/{recipe.id}/'
+    return redirect(url)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -98,7 +89,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             favorite = Favorite.objects.filter(user=user, recipe=recipe)
             if favorite.exists():
                 favorite.delete()
@@ -122,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             shop_cart = ShopCard.objects.filter(user=user, recipe=recipe)
             if shop_cart.exists():
                 shop_cart.delete()
@@ -141,7 +132,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Корзина пуста"},
                             status=status.HTTP_200_OK)
         ingredients = defaultdict(int)
-        print(rec_in_cart)
         for item in rec_in_cart:
             for recipe_ingredient in item.recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
@@ -175,16 +165,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class CustomUserViewSet(DjoserUserViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def list(self, request, *args, **kwargs):
-        users = User.objects.all()
-        paginator = self.pagination_class()
-        paginated_users = paginator.paginate_queryset(users, request)
-        serializer = CustomUserSerializer(paginated_users,
-                                          context={'request': request},
-                                          many=True)
-        return paginator.get_paginated_response(serializer.data)
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -203,7 +183,7 @@ class CustomUserViewSet(DjoserUserViewSet):
                 return Response({'avatar': serializer.data.get('avatar')})
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             user.avatar.delete()
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -223,10 +203,11 @@ class CustomUserViewSet(DjoserUserViewSet):
                     {'errors': 'Вы уже подписаны на этого пользователя.'},
                     status=status.HTTP_400_BAD_REQUEST)
             Subscribe.objects.create(user=user, author=author)
-            serializer = SubSerializer(author, context={'request': request})
+            serializer = SubscriptionsSerializers(author,
+                                                  context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             subscription = Subscribe.objects.filter(user=user, author=author)
             if subscription.exists():
                 subscription.delete()
@@ -239,11 +220,11 @@ class CustomUserViewSet(DjoserUserViewSet):
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
-        subscriptions = Subscribe.objects.filter(user=user)
-        authors = [subscription.author for subscription in subscriptions]
+        subscriptions = user.subscribing.all().select_related('author')
         paginator = self.pagination_class()
-        paginated_authors = paginator.paginate_queryset(authors, request)
-        serializer = SubSerializer(paginated_authors,
-                                   context={'request': request},
-                                   many=True)
+        paginated_subscriptions = paginator.paginate_queryset(subscriptions,
+                                                              request)
+        serializer = SubscriptionsSerializers(paginated_subscriptions,
+                                              context={'request': request},
+                                              many=True)
         return paginator.get_paginated_response(serializer.data)

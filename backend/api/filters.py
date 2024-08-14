@@ -13,10 +13,9 @@ class IngredientFilter(filters.FilterSet):
         fields = ['name']
 
     def filter_by_name(self, queryset, name, value):
-        res = queryset.filter(name__istartswith=value)
-        if res.exists():
-            return res
-        return queryset.filter(name__icontains=value.lower())
+        if value:
+            return queryset.filter(name__istartswith=value)
+        return queryset
 
 
 class RecipeFilter(filters.FilterSet):

@@ -35,7 +35,7 @@ class Recipe(models.Model):
         through='RecipeTag',
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='authors')
+        User, on_delete=models.CASCADE, related_name='recipes')
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',

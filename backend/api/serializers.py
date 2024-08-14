@@ -15,18 +15,6 @@ class CreateUserSerializer(UserSerializer):
         fields = ('email', 'username', 'first_name', 'last_name',
                   'password')
 
-    def validate_password(self, value):
-        if len(value) < 6:
-            raise serializers.ValidationError(
-                "Пароль должен содержать не менее 6 символов.")
-        return value
-
-    def create(self, validated_data):
-        user = User(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         return {
@@ -54,7 +42,7 @@ class CustomUserSerializer(UserSerializer):
         return Subscribe.objects.filter(user=user, author=obj).exists()
 
 
-class SubSerializer(CustomUserSerializer):
+class SubscriptionsSerializers(CustomUserSerializer):
     recipes_count = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
 
@@ -63,7 +51,7 @@ class SubSerializer(CustomUserSerializer):
                                                      'recipes',)
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
+        return obj.recipes.count()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -91,10 +79,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class AddIngredientSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField()  # учтено в модели!
 
 
-class IngredientRecSerializer(serializers.ModelSerializer):
+class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -118,11 +106,7 @@ class RecipeMakeSerializer(serializers.ModelSerializer):
                   'cooking_time']
         model = Recipe
 
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
-        author = self.context['request'].user
-        recipe = Recipe.objects.create(author=author, **validated_data)
+    def _set_ingredients_and_tags(self, recipe, ingredients, tags):
         RecipeIngredient.objects.bulk_create(
             [RecipeIngredient(
                 ingredient=ingredient['id'],
@@ -130,25 +114,22 @@ class RecipeMakeSerializer(serializers.ModelSerializer):
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
-        if tags is not None:
-            recipe.tags.set(tags)
+        recipe.tags.set(tags)
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        author = self.context['request'].user
+        recipe = Recipe.objects.create(author=author, **validated_data)
+        self._set_ingredients_and_tags(recipe, ingredients, tags)
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
-        if tags is not None:
-            instance.tags.clear()
-            instance.tags.set(tags)
-        if ingredients is not None:
-            instance.ingredients.clear()
-            RecipeIngredient.objects.bulk_create(
-                [RecipeIngredient(
-                    ingredient=ingredient['id'],
-                    recipe=instance,
-                    amount=ingredient['amount']
-                ) for ingredient in ingredients]
-            )
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        instance.tags.clear()
+        instance.ingredients.clear()
+        self._set_ingredients_and_tags(instance, ingredients, tags)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
@@ -171,8 +152,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
 
     def get_ingredients(self, obj):
-        queryset = RecipeIngredient.objects.filter(recipe=obj).all()
-        return IngredientRecSerializer(queryset, many=True).data
+        queryset = obj.recipe_ingredients.all()
+        return IngredientRecipeSerializer(queryset, many=True).data
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user

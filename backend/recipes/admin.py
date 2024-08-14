@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from recipes.models import Recipe, Favorite, ShopCard, Tag, Ingredient
-from users.models import User, Subscribe
 
 admin.site.register(Tag)
 
@@ -30,16 +29,5 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Recipe, RecipeAdmin)
-
-
-class UserAdmin(admin.ModelAdmin):
-    search_fields = ['email', 'username']
-
-
-admin.site.register(User, UserAdmin)
-
 admin.site.register(Favorite)
-
 admin.site.register(ShopCard)
-
-admin.site.register(Subscribe)
