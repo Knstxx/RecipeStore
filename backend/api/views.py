@@ -9,13 +9,14 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, redirect
-from collections import defaultdict
+from django.db.models import Sum
 from fpdf import FPDF
 from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 
 from api.serializers import TagSerializer, IngredientSerializer
-from recipes.models import Tag, Ingredient, Recipe, Favorite, ShopCard
+from recipes.models import (Tag, Ingredient, Recipe, Favorite,
+                            ShopCard, RecipeIngredient)
 from users.models import Subscribe
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReaderOrAuthenticated
@@ -131,12 +132,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if not rec_in_cart.exists():
             return Response({"detail": "Корзина пуста"},
                             status=status.HTTP_200_OK)
-        ingredients = defaultdict(int)
-        for item in rec_in_cart:
-            for recipe_ingredient in item.recipe.recipe_ingredients.all():
-                ingredient = recipe_ingredient.ingredient
-                ingredients[(ingredient.name, ingredient.measurement_unit)
-                            ] += recipe_ingredient.amount
+        ingredients = (
+            RecipeIngredient.objects.filter(recipe__in=rec_in_cart
+                                            .values_list('recipe', flat=True))
+            .values('ingredient__name', 'ingredient__measurement_unit')
+            .annotate(amount=Sum('amount'))
+        )
 
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -152,7 +153,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         pdf.cell(0, 10, "К закупкам!", ln=True, align='C')
         pdf.set_text_color(0, 45, 143)
         pdf.set_font("ComicSansMS", size=14)
-        for index, ((name, unit), amount) in enumerate(ingredients.items()):
+        for index, ingredient in enumerate(ingredients):
+            name = ingredient['ingredient__name']
+            unit = ingredient['ingredient__measurement_unit']
+            amount = ingredient['amount']
             line_text = f"{index + 1}. {name} ({unit}) — {amount}"
             pdf.cell(0, 10, line_text, ln=True)
         pdf_output = io.BytesIO()
