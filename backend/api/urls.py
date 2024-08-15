@@ -21,6 +21,5 @@ urlpatterns = [
     path('', include(user_router.urls)),
     path('', include(tags_router.urls)),
     path('', include(ingredients_router.urls)),
-    path('', include('users.urls')),
     path('', include(recipe_router.urls)),
 ]

@@ -8,24 +8,6 @@ from recipes.models import (Recipe, RecipeIngredient, Favorite, ShopCard,
 from users.models import User, Subscribe
 
 
-class CreateUserSerializer(UserSerializer):
-
-    class Meta:
-        model = User
-        fields = ('email', 'username', 'first_name', 'last_name',
-                  'password')
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return {
-            'email': representation['email'],
-            'id': instance.id,
-            'username': representation['username'],
-            'first_name': representation['first_name'],
-            'last_name': representation['last_name'],
-        }
-
-
 class CustomUserSerializer(UserSerializer):
     is_subscribed = SerializerMethodField(read_only=True)
     avatar = Base64ImageField(required=False)

@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from rest_framework import permissions, status
+from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, redirect
 from collections import defaultdict
@@ -16,12 +16,12 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 
 from api.serializers import TagSerializer, IngredientSerializer
 from recipes.models import Tag, Ingredient, Recipe, Favorite, ShopCard
-from users.models import User, Subscribe
+from users.models import Subscribe
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReaderOrAuthenticated
 from api.serializers import (RecipeSerializer, RecipeMakeSerializer,
                              FavShopSerializer, CustomUserSerializer,
-                             CreateUserSerializer, SubscriptionsSerializers)
+                             SubscriptionsSerializers)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -168,7 +168,7 @@ class CustomUserViewSet(DjoserUserViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return CreateUserSerializer
+            return super().get_serializer_class()
         return CustomUserSerializer
 
     @action(detail=False, methods=['put', 'delete'], url_path='me/avatar')
