@@ -3,8 +3,9 @@ import os
 
 from django.conf import settings
 from django.core.management import BaseCommand
+from django.db import IntegrityError
 
-from api.models import Ingredient
+from recipes.models import Ingredient
 
 TABLES = {
     Ingredient: 'ingredients.csv',
@@ -30,7 +31,7 @@ class Command(BaseCommand):
                     try:
                         model.objects.create(**line)
                         add += 1
-                    except Exception:
+                    except IntegrityError:
                         continue
             self.stdout.write(self.style.SUCCESS(
                 f'Импорт из {file_name} закончен. Добавлено {add} из {sum_cl}')
