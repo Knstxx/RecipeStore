@@ -90,14 +90,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            favorite = Favorite.objects.filter(user=user, recipe=recipe)
-            if favorite.exists():
-                favorite.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Рецепт не находится у вас в избранном.'},
-                status=status.HTTP_400_BAD_REQUEST)
+        favorite = Favorite.objects.filter(user=user, recipe=recipe)
+        if favorite.exists():
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'Рецепт не находится у вас в избранном.'},
+            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
     def shopping_cart(self, request, pk=None):
@@ -114,14 +113,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            shop_cart = ShopCard.objects.filter(user=user, recipe=recipe)
-            if shop_cart.exists():
-                shop_cart.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Рецепт не находится у вас в списке покупок.'},
-                status=status.HTTP_400_BAD_REQUEST)
+        shop_cart = ShopCard.objects.filter(user=user, recipe=recipe)
+        if shop_cart.exists():
+            shop_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'Рецепт не находится у вас в списке покупок.'},
+            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='download_shopping_cart',
             permission_classes=(IsAuthenticated,))
@@ -187,10 +185,9 @@ class CustomUserViewSet(DjoserUserViewSet):
                 return Response({'avatar': serializer.data.get('avatar')})
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-        if request.method == 'DELETE':
-            user.avatar.delete()
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        user.avatar.delete()
+        user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'], url_path='subscribe')
     def subscribe(self, request, id=None):
@@ -211,14 +208,13 @@ class CustomUserViewSet(DjoserUserViewSet):
                                                   context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            subscription = Subscribe.objects.filter(user=user, author=author)
-            if subscription.exists():
-                subscription.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Вы не подписаны на этого пользователя.'},
-                status=status.HTTP_400_BAD_REQUEST)
+        subscription = Subscribe.objects.filter(user=user, author=author)
+        if subscription.exists():
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'Вы не подписаны на этого пользователя.'},
+            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='subscriptions',
             permission_classes=(IsAuthenticated,))
