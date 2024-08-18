@@ -52,10 +52,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def get_paginated_response(self, data):
-        if self.request.method == 'POST':
-            return Response(data)
-
     def get_serializer_class(self):
         if self.action == 'partial_update' or self.action == 'create':
             return RecipeMakeSerializer

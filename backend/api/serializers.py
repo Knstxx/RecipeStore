@@ -63,6 +63,12 @@ class AddIngredientSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(min_value=1)
 
+    def to_representation(self, instance):
+        return {
+            'id': instance.id,
+            'amount': instance.amount
+        }
+
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
