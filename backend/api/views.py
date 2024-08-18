@@ -28,14 +28,12 @@ from .pagination import CustomLimitOffsetPagination
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    pagination_class = CustomLimitOffsetPagination
     serializer_class = TagSerializer
     http_method_names = ['get']
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
-    pagination_class = CustomLimitOffsetPagination
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
