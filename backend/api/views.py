@@ -23,16 +23,19 @@ from api.permissions import IsAuthorOrReaderOrAuthenticated
 from api.serializers import (RecipeSerializer, RecipeMakeSerializer,
                              FavShopSerializer, CustomUserSerializer,
                              SubscriptionsSerializers)
+from .pagination import CustomLimitOffsetPagination
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
+    pagination_class = CustomLimitOffsetPagination
     serializer_class = TagSerializer
     http_method_names = ['get']
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
+    pagination_class = CustomLimitOffsetPagination
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
@@ -47,6 +50,7 @@ def recipe_redirect_view(request, short_link):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    pagination_class = CustomLimitOffsetPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthorOrReaderOrAuthenticated]
     filter_backends = (DjangoFilterBackend,)
@@ -167,6 +171,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class CustomUserViewSet(DjoserUserViewSet):
+    pagination_class = CustomLimitOffsetPagination
 
     def get_serializer_class(self):
         if self.action == 'create':
