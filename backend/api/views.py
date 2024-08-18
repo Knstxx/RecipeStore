@@ -52,9 +52,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def list(self, request, *args, **kwargs):
-        if 'name' in request.query_params:
-            self.pagination_class = None
+    def get_paginated_response(self, data):
+        if self.request.method == 'POST':
+            return Response(data)
 
     def get_serializer_class(self):
         if self.action == 'partial_update' or self.action == 'create':
