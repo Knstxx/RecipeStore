@@ -36,7 +36,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
-    paginator = None
     http_method_names = ['get']
 
 
@@ -52,6 +51,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReaderOrAuthenticated]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def list(self, request, *args, **kwargs):
+        if 'name' in request.query_params:
+            self.pagination_class = None
 
     def get_serializer_class(self):
         if self.action == 'partial_update' or self.action == 'create':
