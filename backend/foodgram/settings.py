@@ -10,7 +10,9 @@ DEBUG = False
 ALLOWED_HOSTS = ['158.160.14.236', '127.0.0.1', 'localhost',
                  'foooooooooooodgram.sytes.net']
 
-CSRF_TRUSTED_ORIGINS = ['https://foooooooooooodgram.sytes.net/', 'https://foooooooooooodgram.sytes.net/admin/login/?next=/admin/,']
+CSRF_TRUSTED_ORIGINS = ['https://foooooooooooodgram.sytes.net/']
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
