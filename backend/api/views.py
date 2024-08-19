@@ -15,7 +15,7 @@ import pyshorteners
 from api.serializers import TagSerializer, IngredientSerializer
 from recipes.models import (Tag, Ingredient, Recipe, Favorite,
                             ShopCard, RecipeIngredient)
-from users.models import Subscribe
+from users.models import Subscribe, User
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReaderOrAuthenticated
 from api.serializers import (RecipeSerializer, RecipeMakeSerializer,
@@ -57,7 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         short_url = shortener.tinyurl.short(
             request.build_absolute_uri()
             .replace('/api', '')
-            .replace('/get-link', '')
+            .replace('/get-link/', '')
         )
         return Response({'short-link': short_url})
 
@@ -206,9 +206,8 @@ class CustomUserViewSet(DjoserUserViewSet):
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
-        subscriptions = Subscribe.objects.filter(user=user)
-        authors = [subscription.author for subscription in subscriptions]
-        serializer = SubscriptionsSerializers(authors,
+        subscriptions = User.objects.filter(subscribing__user=user)
+        serializer = SubscriptionsSerializers(subscriptions,
                                               context={'request': request},
                                               many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
