@@ -41,7 +41,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 def recipe_redirect_view(request, short_link):
-    recipe = get_object_or_404(Recipe, short_link=short_link)
+    full_short_link = f"{request.build_absolute_uri('/')}s/{short_link}"
+    recipe = get_object_or_404(Recipe, short_link=full_short_link)
     url = f'/api/recipes/{recipe.id}/'
     return redirect(url)
 
@@ -63,12 +64,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         if not recipe.short_link:
+            baseURL = request.build_absolute_uri('/')
             while True:
                 unic_url = ''.join(
                     random.choice(string.ascii_letters
                                   + string.digits) for _ in range(3)
                 )
-                recipe.short_link = unic_url
+                recipe.short_link = f"{baseURL}s/{unic_url}"
                 try:
                     recipe.save()
                     break
