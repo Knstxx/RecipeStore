@@ -9,4 +9,3 @@
 
 Tech.Stack: Python, Django, DRF, PostgreSQL, Djoser.
 Сайт доступен по адрессу: https://foooooooooooodgram.sytes.net/
-.
