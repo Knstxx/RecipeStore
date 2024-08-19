@@ -22,7 +22,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 f'Импорт данных из {file_name}')
             )
-            file_path = os.path.join(settings.BASE_DIR, '..', 'data',
+            file_path = os.path.join(settings.BASE_DIR, 'data',
                                      file_name)
             with open(file_path, 'r', encoding='utf-8') as file:
                 reader = DictReader(file)
