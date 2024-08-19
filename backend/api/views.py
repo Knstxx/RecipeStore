@@ -63,13 +63,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         if not recipe.short_link:
-            baseURL = request.build_absolute_uri('/')
             while True:
                 unic_url = ''.join(
                     random.choice(string.ascii_letters
                                   + string.digits) for _ in range(3)
                 )
-                recipe.short_link = f"{baseURL}s/{unic_url}"
+                recipe.short_link = unic_url
                 try:
                     recipe.save()
                     break
