@@ -27,7 +27,6 @@ from .pagination import CustomLimitOffsetPagination
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    http_method_names = ['get']
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -35,7 +34,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
-    http_method_names = ['get']
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -61,7 +59,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response({'short-link': short_url})
 
-    @action(detail=True, methods=['post', 'delete'], url_path='favorite')
+    @action(detail=True, methods=['post', 'delete'], url_path='favorite',
+            permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk=None):
         recipe = self.get_object()
         user = request.user
@@ -83,7 +82,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'errors': 'Рецепт не находится у вас в избранном.'},
             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
+    @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart',
+            permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
         recipe = self.get_object()
         user = request.user
@@ -175,7 +175,8 @@ class CustomUserViewSet(DjoserUserViewSet):
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'], url_path='subscribe')
+    @action(detail=True, methods=['post', 'delete'], url_path='subscribe',
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id=None):
         author = self.get_object()
         user = request.user
