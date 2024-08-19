@@ -28,7 +28,6 @@ from .pagination import CustomLimitOffsetPagination
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    pagination_class = CustomLimitOffsetPagination
     serializer_class = TagSerializer
     http_method_names = ['get']
 
@@ -51,6 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthorOrReaderOrAuthenticated]
+    pagination_class = CustomLimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
