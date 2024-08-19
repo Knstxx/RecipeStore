@@ -206,7 +206,7 @@ class CustomUserViewSet(DjoserUserViewSet):
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
-        subscriptions = user.subscribing.all().select_related('author')
+        subscriptions = user.subscribing.all()
         paginator = self.pagination_class()
         paginated_subscriptions = paginator.paginate_queryset(subscriptions,
                                                               request)
