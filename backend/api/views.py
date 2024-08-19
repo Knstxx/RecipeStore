@@ -1,6 +1,4 @@
 import io
-import random
-import string
 
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,11 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Sum
 from fpdf import FPDF
 from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
+import pyshorteners
 
 from api.serializers import TagSerializer, IngredientSerializer
 from recipes.models import (Tag, Ingredient, Recipe, Favorite,
@@ -40,13 +38,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     http_method_names = ['get']
 
 
-def recipe_redirect_view(request, short_link):
-    full_short_link = f"{request.build_absolute_uri('/')}s/{short_link}"
-    recipe = get_object_or_404(Recipe, short_link=full_short_link)
-    url = f'/api/recipes/{recipe.id}/'
-    return redirect(url)
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -60,24 +51,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeMakeSerializer
         return RecipeSerializer
 
-    @action(detail=True, methods=['get'], url_path='get-link')
-    def get_link(self, request, pk=None):
-        recipe = self.get_object()
-        if not recipe.short_link:
-            baseURL = request.build_absolute_uri('/')
-            while True:
-                unic_url = ''.join(
-                    random.choice(string.ascii_letters
-                                  + string.digits) for _ in range(3)
-                )
-                recipe.short_link = f"{baseURL}s/{unic_url}"
-                try:
-                    recipe.save()
-                    break
-                except Exception:
-                    continue
-        return Response({'short-link': recipe.short_link},
-                        status=status.HTTP_200_OK)
+    @action(detail=True, methods=('get',), url_path='get-link')
+    def get_short_link(self, request, pk):
+        shortener = pyshorteners.Shortener()
+        short_url = shortener.tinyurl.short(
+            request.build_absolute_uri()
+            .replace('/api', '')
+            .replace('/get-link', '')
+        )
+        return Response({'short-link': short_url})
 
     @action(detail=True, methods=['post', 'delete'], url_path='favorite')
     def favorite(self, request, pk=None):

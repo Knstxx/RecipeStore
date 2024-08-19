@@ -46,8 +46,6 @@ class Recipe(models.Model):
     text = models.TextField()
     cooking_time = models.PositiveIntegerField(
         validators=[MinValueValidator(1)])
-    short_link = models.CharField(unique=True, max_length=256,
-                                  null=True, blank=True)
 
     class Meta:
         ordering = ['-id']
