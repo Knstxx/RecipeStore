@@ -206,8 +206,9 @@ class CustomUserViewSet(DjoserUserViewSet):
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
-        subscriptions = user.subscribing.all().select_related('author')
-        serializer = SubscriptionsSerializers(user,
+        subscriptions = Subscribe.objects.filter(user=user)
+        authors = [subscription.author for subscription in subscriptions]
+        serializer = SubscriptionsSerializers(authors,
                                               context={'request': request},
                                               many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
