@@ -208,6 +208,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         user = request.user
         subscriptions = Subscribe.objects.filter(user=user)
         authors = [subscription.author for subscription in subscriptions]
-        serializer = SubscriptionsSerializers(user,
-                                              context={'request': request})
+        serializer = SubscriptionsSerializers(authors,
+                                              context={'request': request},
+                                              many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
